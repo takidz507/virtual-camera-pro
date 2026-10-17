@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/vcam_bg"
+    android:orientation="vertical">
+
+    <!-- Browser Top Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/vcam_panel"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+        <ImageButton
+            android:id="@+id/btnBrowserBack"
+            android:layout_width="38dp"
+            android:layout_height="38dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/vcam_text" />
+
+        <EditText
+            android:id="@+id/etBrowserUrl"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="6dp"
+            android:background="@drawable/bg_status_badge"
+            android:hint="أدخل رابط الموقع (مثال: webcamtests.com)"
+            android:imeOptions="actionGo"
+            android:inputType="textUri"
+            android:paddingHorizontal="12dp"
+            android:singleLine="true"
+            android:text="https://webcamtests.com/"
+            android:textColor="@color/vcam_text"
+            android:textColorHint="@color/vcam_muted"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnBrowserGo"
+            android:layout_width="64dp"
+            android:layout_height="40dp"
+            android:backgroundTint="@color/vcam_accent"
+            android:text="انتقال"
+            android:textColor="@color/vcam_accent_ink"
+            android:textSize="11sp"
+            android:textStyle="bold"
+            app:cornerRadius="10dp" />
+    </LinearLayout>
+
+    <!-- Live WebRTC Camera Source Switcher Bar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/vcam_panel_soft"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp">
+
+        <TextView
+            android:id="@+id/tvWebRtcStatus"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="🟢 WebRTC Hook: يبث الفيديو المختار ككاميرا ويب"
+            android:textColor="@color/vcam_accent"
+            android:textSize="11sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnWebRtcSwitchSource"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="34dp"
+            android:text="🔄 تبديل للكاميرا الحقيقية"
+            android:textColor="@color/vcam_blue"
+            android:textSize="11sp"
+            app:cornerRadius="8dp"
+            app:strokeColor="@color/vcam_blue" />
+    </LinearLayout>
+
+    <WebView
+        android:id="@+id/webViewVirtualCam"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>
