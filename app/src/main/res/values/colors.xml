@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="vcam_bg">#0E1015</color>
+    <color name="vcam_panel">#181B24</color>
+    <color name="vcam_panel_soft">#222634</color>
+    <color name="vcam_border">#2E3346</color>
+    <color name="vcam_text">#F3F4F8</color>
+    <color name="vcam_muted">#9BA1B6</color>
+    <color name="vcam_accent">#C8F169</color>
+    <color name="vcam_accent_ink">#172208</color>
+    <color name="vcam_blue">#38BDF8</color>
+    <color name="vcam_danger">#FF6B7B</color>
+    <color name="vcam_success">#4ADE80</color>
+</resources>
