@@ -1,0 +1,2 @@
+-keep class com.takidz.vcam.hook.** { *; }
+-dontwarn de.robv.android.xposed.**
