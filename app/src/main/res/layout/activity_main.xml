@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/vcam_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="18dp">
+
+        <!-- Top App Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🎥 Virtual Camera Pro"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="21sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:text="كاميرا وهمية أصلية مع تبديل فوري (فيديو ⇄ كاميرا حقيقية)"
+                    android:textColor="@color/vcam_muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvActiveStatusBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_status_badge"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="6dp"
+                android:text="● متوقف"
+                android:textColor="@color/vcam_muted"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Live Monitor Card (Shows either Virtual Video or Real Camera2) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/vcam_panel"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/vcam_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:background="@drawable/bg_preview_frame">
+
+                    <TextureView
+                        android:id="@+id/texturePreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/tvPreviewPlaceholder"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:padding="16dp"
+                        android:text="لم يتم اختيار فيديو بعد
+اضغط على (اختيار فيديو من الهاتف) بالأسفل"
+                        android:textColor="@color/vcam_muted"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/tvCurrentSourceTag"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|start"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/bg_status_badge"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="🎬 المصدر: الفيديو المختار"
+                        android:textColor="@color/vcam_accent"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <!-- Selected Video Details -->
+                <TextView
+                    android:id="@+id/tvSelectedVideoInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="الملف الحالي: لا يوجد فيديو محدد"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <!-- Primary Action Row: Pick Video + Master Enable/Disable -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnPickVideo"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:backgroundTint="@color/vcam_panel_soft"
+                        android:text="📂 اختيار فيديو"
+                        android:textColor="@color/vcam_text"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/vcam_accent"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnToggleVirtualCam"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:backgroundTint="@color/vcam_accent"
+                        android:text="▶ تفعيل الكاميرا"
+                        android:textColor="@color/vcam_accent_ink"
+                        android:textSize="13sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="14dp" />
+                </LinearLayout>
+
+                <!-- Quick Switch Button: Virtual Video <-> Real Camera2 -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnQuickSwitchSource"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:text="🔄 التبديل الفوري إلى: الكاميرا الحقيقية (Camera2)"
+                    android:textColor="@color/vcam_blue"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/vcam_blue" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Stream Settings Card (Loop, Quality, Mirror, Audio) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/vcam_panel"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/vcam_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚙️ إعدادات البث والجودة"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="10dp" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/swLoopVideo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="🔁 تكرار الفيديو تلقائياً بلا توقف (Loop Video)"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/swMirrorVideo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:text="🪞 عكس الفيديو أفقياً (محاكاة الكاميرا الأمامية Selfie)"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="13sp" />
+
+                <com.google.android.material.switchmaterial.SwitchMaterial
+                    android:id="@+id/swMuteAudio"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:text="🔇 كتم صوت الفيديو الأصلي أثناء العرض"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="6dp"
+                    android:text="🎞 جودة البث ودقة الإطارات (Stream Resolution &amp; FPS):"
+                    android:textColor="@color/vcam_muted"
+                    android:textSize="12sp" />
+
+                <Spinner
+                    android:id="@+id/spStreamQuality"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:background="@drawable/bg_status_badge"
+                    android:paddingHorizontal="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Non-Root Launch Modes Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/vcam_panel"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/vcam_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🚀 أوضاع التشغيل مع التطبيقات والمواقع (بدون روت)"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="12dp"
+                    android:text="اختر الطريقة المناسبة للتطبيق أو الموقع الذي تريد تشغيل الكاميرا الوهمية بداخله:"
+                    android:textColor="@color/vcam_muted"
+                    android:textSize="12sp" />
+
+                <!-- Mode 1: Built-in WebRTC Browser -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenWebRtcBrowser"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:backgroundTint="@color/vcam_blue"
+                    android:text="🌐 فتح متصفح الكاميرا الوهمية للمواقع (WebRTC)"
+                    android:textColor="#08121E"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="14dp" />
+
+                <!-- Mode 2: Floating Quick-Switch Controller -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnToggleFloatingOverlay"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="8dp"
+                    android:text="🪟 تشغيل أداة التحكم العائمة فوق التطبيقات"
+                    android:textColor="@color/vcam_accent"
+                    android:textSize="13sp"
+                    app:cornerRadius="14dp"
+                    app:strokeColor="@color/vcam_accent" />
+
+                <!-- Mode 3: Test System Camera Intent -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTestCameraIntent"
+                    style="@style/Widget.MaterialComponents.Button.TextButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginTop="4dp"
+                    android:text="📸 تجربة شاشة الكاميرا النظامية (Intent Capture)"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>
