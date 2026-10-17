@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="Theme.VCamPro" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/vcam_accent</item>
+        <item name="colorPrimaryVariant">@color/vcam_panel</item>
+        <item name="colorOnPrimary">@color/vcam_accent_ink</item>
+        <item name="colorSecondary">@color/vcam_blue</item>
+        <item name="android:statusBarColor">@color/vcam_bg</item>
+        <item name="android:navigationBarColor">@color/vcam_bg</item>
+        <item name="android:windowBackground">@color/vcam_bg</item>
+    </style>
+</resources>
