@@ -377,8 +377,7 @@ public class MainActivity extends AppCompatActivity {
                 videoPlayer.startPlayback(this, activePreviewSurface, prefs);
             } else {
                 tvPreviewPlaceholder.setVisibility(View.VISIBLE);
-                tvPreviewPlaceholder.setText("لم يتم اختيار فيديو بعد
-اضغط على (اختيار فيديو) بالأسفل");
+                tvPreviewPlaceholder.setText("لم يتم اختيار فيديو بعد\nاضغط على (اختيار فيديو) بالأسفل");
             }
         }
     }
