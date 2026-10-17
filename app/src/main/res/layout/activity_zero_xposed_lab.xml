@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/vcam_bg"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="14dp">
+
+            <ImageButton
+                android:id="@+id/btnLabBack"
+                android:layout_width="42dp"
+                android:layout_height="42dp"
+                android:background="@drawable/bg_status_badge"
+                android:src="@android:drawable/ic_menu_revert"
+                android:contentDescription="رجوع" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="10dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="⚡ محرك وحاضنة بدون Xposed وبدون روت"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ICameraService Binder Proxy + Pine ART Hook"
+                    android:textColor="@color/vcam_accent"
+                    android:textSize="11sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Telemetry & Engine Status Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/vcam_panel"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/vcam_accent"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🛡️ حالة محرك الاختراق النظيف (Zero-Xposed Telemetry)"
+                    android:textColor="@color/vcam_accent"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvLabTelemetry"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:background="@drawable/bg_status_badge"
+                    android:padding="12dp"
+                    android:text="جاري فحص طبقات Binder Proxy و ART Hook..."
+                    android:textColor="@color/vcam_text"
+                    android:textSize="12sp"
+                    android:lineSpacingExtra="4dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnActivateZeroXposedEngine"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="10dp"
+                    android:backgroundTint="@color/vcam_accent"
+                    android:text="⚡ تفعيل وإعادة حقن Binder Proxy + Pine الآن"
+                    android:textColor="@color/vcam_accent_ink"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Live Hardware Camera Interception Test Bench -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            app:cardBackgroundColor="@color/vcam_panel"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/vcam_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🔬 مختبر اعتراض الكاميرا الحقيقية (بدون Xposed)"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="10dp"
+                    android:text="يستدعي هذا الاختبار دوال أندرويد الرسمية CameraManager.openCamera و Camera.open() مباشرة، ويعرض كيف يعترضها محركنا ويستبدلها بالفيديو المختار دون Xposed:"
+                    android:textColor="@color/vcam_muted"
+                    android:textSize="11sp" />
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="220dp"
+                    android:background="@drawable/bg_preview_frame">
+
+                    <SurfaceView
+                        android:id="@+id/svZeroXposedPreview"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent" />
+
+                    <TextView
+                        android:id="@+id/tvLabPreviewStatus"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="top|start"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/bg_status_badge"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="4dp"
+                        android:text="جاهز للاختبار المباشر"
+                        android:textColor="@color/vcam_accent"
+                        android:textSize="11sp"
+                        android:textStyle="bold" />
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTestCamera2Binder"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:backgroundTint="@color/vcam_blue"
+                        android:text="🚀 اختبار Camera2 (Binder Proxy)"
+                        android:textColor="#08121E"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnTestCamera1SurfaceHolder"
+                        android:layout_width="0dp"
+                        android:layout_height="50dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:backgroundTint="@color/vcam_panel_soft"
+                        android:text="📷 اختبار Camera1 (وضع Open Camera)"
+                        android:textColor="@color/vcam_text"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/vcam_accent"
+                        app:strokeWidth="1dp" />
+                </LinearLayout>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTestTakePictureJpeg"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="46dp"
+                    android:layout_marginTop="8dp"
+                    android:text="📸 اختبار التقاط صورة (Camera.takePicture JPEG Synthesis)"
+                    android:textColor="@color/vcam_accent"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="12dp"
+                    app:strokeColor="@color/vcam_accent" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Zero-Xposed Web & App Workspace Shortcuts -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/vcam_panel"
+            app:cardCornerRadius="18dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/vcam_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="🌐 حاضنة تشغيل المنصات والتطبيقات مباشرة (بدون روت وبدون Xposed)"
+                    android:textColor="@color/vcam_text"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLaunchWhatsAppWeb"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="5dp"
+                        android:text="💬 واتساب ويب"
+                        android:textColor="@color/vcam_accent"
+                        android:textSize="12sp"
+                        app:cornerRadius="10dp"
+                        app:strokeColor="@color/vcam_accent" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLaunchTelegramWeb"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="5dp"
+                        android:text="✈️ تيليجرام ويب"
+                        android:textColor="@color/vcam_blue"
+                        android:textSize="12sp"
+                        app:cornerRadius="10dp"
+                        app:strokeColor="@color/vcam_blue" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLaunchZoomMeet"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="5dp"
+                        android:text="📹 Google Meet"
+                        android:textColor="@color/vcam_text"
+                        android:textSize="12sp"
+                        app:cornerRadius="10dp"
+                        app:strokeColor="@color/vcam_border" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnLaunchWebcamTest"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                        android:layout_width="0dp"
+                        android:layout_height="46dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="5dp"
+                        android:text="🔍 فحص WebcamTests"
+                        android:textColor="@color/vcam_text"
+                        android:textSize="12sp"
+                        app:cornerRadius="10dp"
+                        app:strokeColor="@color/vcam_border" />
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+</ScrollView>
