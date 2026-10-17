@@ -277,6 +277,19 @@
                     android:textColor="@color/vcam_muted"
                     android:textSize="12sp" />
 
+                <!-- Mode 0 (NEW v3.0): Zero-Xposed Binder Proxy + Pine ART Lab -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnOpenZeroXposedLab"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginBottom="8dp"
+                    android:backgroundTint="@color/vcam_accent"
+                    android:text="⚡ محرك وحاضنة بدون Xposed (Binder Proxy + Pine)"
+                    android:textColor="@color/vcam_accent_ink"
+                    android:textSize="13sp"
+                    android:textStyle="bold"
+                    app:cornerRadius="14dp" />
+
                 <!-- Mode 1: Built-in WebRTC Browser -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnOpenWebRtcBrowser"
