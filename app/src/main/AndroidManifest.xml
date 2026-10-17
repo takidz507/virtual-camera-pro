@@ -16,22 +16,34 @@
     <uses-feature android:name="android.hardware.camera" android:required="false" />
     <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
 
+    <!-- Android 11 - 16 Cross-App Package Visibility for Camera & Virtual Video Provider -->
+    <queries>
+        <intent>
+            <action android:name="android.media.action.IMAGE_CAPTURE" />
+        </intent>
+        <intent>
+            <action android:name="android.media.action.VIDEO_CAPTURE" />
+        </intent>
+        <provider android:authorities="com.takidz.vcam.provider" />
+    </queries>
+
     <application
         android:name=".VCamApplication"
         android:allowBackup="false"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
+        android:extractNativeLibs="true"
         android:theme="@style/Theme.VCamPro"
         tools:targetApi="34">
 
-        <!-- Metadata for LSPatch / Xposed non-root APK patching -->
+        <!-- Metadata for optional LSPatch / Xposed compatibility -->
         <meta-data
             android:name="xposedmodule"
             android:value="true" />
         <meta-data
             android:name="xposeddescription"
-            android:value="Virtual Camera Pro — Inject local video into Camera1/Camera2 surfaces (Works with LSPatch without Root)" />
+            android:value="Virtual Camera Pro v3.0 — Zero-Xposed Binder Proxy + Pine ART Hook + Camera1/Camera2/OpenCamera Full Fix" />
         <meta-data
             android:name="xposedminversion"
             android:value="82" />
@@ -47,7 +59,13 @@
             </intent-filter>
         </activity>
 
-        <!-- 2. System-Wide Camera Intent Responder (Works 100% without Root when any app/browser requests Camera Intent) -->
+        <!-- 2. NEW v3.0: Zero-Xposed & Zero-Root Binder Proxy + Pine ART Lab & Sandbox Activity -->
+        <activity
+            android:name=".ui.ZeroXposedLabActivity"
+            android:exported="true"
+            android:configChanges="orientation|screenSize" />
+
+        <!-- 3. System-Wide Camera Intent Responder (Works 100% without Root or Xposed when any app requests Camera Intent) -->
         <activity
             android:name=".ui.VirtualCameraCaptureActivity"
             android:exported="true"
@@ -67,7 +85,7 @@
             </intent-filter>
         </activity>
 
-        <!-- 3. Built-in WebRTC Virtual Camera Browser (Injects Virtual Video into navigator.mediaDevices.getUserMedia) -->
+        <!-- 4. Built-in WebRTC Virtual Camera Browser (Injects Virtual Video into getUserMedia, enumerateDevices & File Chooser) -->
         <activity
             android:name=".ui.VirtualWebBrowserActivity"
             android:exported="true"
@@ -81,14 +99,21 @@
             </intent-filter>
         </activity>
 
-        <!-- 4. Cross-Process ContentProvider for feeding video & live settings to hooked apps -->
+        <!-- 5. Cross-Process ContentProvider for feeding video & live settings -->
         <provider
             android:name=".provider.VirtualVideoProvider"
             android:authorities="com.takidz.vcam.provider"
             android:exported="true"
             android:grantUriPermissions="true" />
 
-        <!-- 5. Floating Quick-Switch Controller Service (Switch between Real Camera & Video over any app) -->
+        <!-- 6. NEW v3.0: Auto-Boot Zero-Xposed Engine Provider (Initializes BinderCameraInterceptor + PineArtHookEngine before Application.onCreate) -->
+        <provider
+            android:name=".provider.ZeroXposedBootProvider"
+            android:authorities="com.takidz.vcam.zeroxposed.boot"
+            android:exported="false"
+            android:initOrder="999999999" />
+
+        <!-- 7. Floating Quick-Switch Controller Service (Switch between Real Camera & Video over any app) -->
         <service
             android:name=".service.FloatingControlService"
             android:exported="false"
