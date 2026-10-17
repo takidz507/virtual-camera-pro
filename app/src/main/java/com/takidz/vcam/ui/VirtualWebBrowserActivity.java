@@ -2,9 +2,11 @@ package com.takidz.vcam.ui;
 
 import android.annotation.SuppressLint;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.PermissionRequest;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebResourceResponse;
@@ -29,11 +31,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Built-in WebRTC Virtual Camera Browser (Works 100% Without Root on ANY Website!).
- * - Intercepts `navigator.mediaDevices.getUserMedia` and `navigator.mediaDevices.enumerateDevices`.
- * - Streams the user's selected local video (`https://vcam.local/active_video.mp4`) through an offscreen
- *   HTML5 Canvas (`captureStream(fps)`) at the selected broadcast resolution (480p / 720p / 1080p).
- * - Supports live 1-tap switching between the Virtual Video and the Real Camera without reloading the page!
+ * Upgraded v3.0 WebRTC & File-Capture Virtual Camera Browser (100% No Root & No Xposed):
+ * - Overrides `navigator.mediaDevices.getUserMedia` AND `navigator.mediaDevices.enumerateDevices`.
+ * - Spoofs `MediaStreamTrack.prototype.getSettings()` & `getCapabilities()` so strict web apps
+ *   (WhatsApp Web, Telegram Web, Zoom, Google Meet, OmeTV, KYC portals) see genuine hardware camera specs.
+ * - Intercepts `<input type="file" capture="camera">` (`onShowFileChooser`) to automatically feed
+ *   the selected virtual video file without opening the hardware camera!
  */
 public class VirtualWebBrowserActivity extends AppCompatActivity {
 
@@ -75,7 +78,6 @@ public class VirtualWebBrowserActivity extends AppCompatActivity {
         btnWebRtcSwitchSource.setOnClickListener(v -> {
             prefs.toggleSourceMode();
             updateBannerUI();
-            // Dynamically tell the injected JS hook to switch between Virtual Video and Real Camera
             String jsCmd = "if(window.__vcamSetMode){ window.__vcamSetMode('" + prefs.getSourceMode() + "'); }";
             webView.evaluateJavascript(jsCmd, null);
         });
@@ -115,14 +117,30 @@ public class VirtualWebBrowserActivity extends AppCompatActivity {
         WebSettings settings = webView.getSettings();
         settings.setJavaScriptEnabled(true);
         settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
         settings.setMediaPlaybackRequiresUserGesture(false);
         settings.setAllowFileAccess(true);
         settings.setAllowContentAccess(true);
+        // Desktop-class User-Agent support for WhatsApp Web / Telegram Web / Zoom
+        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36");
 
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public void onPermissionRequest(final PermissionRequest request) {
                 runOnUiThread(() -> request.grant(request.getResources()));
+            }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                if (prefs.isVirtualCamEnabled() && prefs.hasSelectedVideo() && !prefs.isShowingRealCamera()) {
+                    File videoFile = prefs.getInternalVideoFile();
+                    if (videoFile.exists()) {
+                        filePathCallback.onReceiveValue(new Uri[]{Uri.fromFile(videoFile)});
+                        Toast.makeText(VirtualWebBrowserActivity.this, "🎬 تم تزويد الموقع بالفيديو الوهمي تلقائياً!", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                }
+                return super.onShowFileChooser(webView, filePathCallback, fileChooserParams);
             }
         });
 
@@ -167,10 +185,6 @@ public class VirtualWebBrowserActivity extends AppCompatActivity {
         });
     }
 
-    /**
-     * Injects a transparent WebRTC `navigator.mediaDevices.getUserMedia` hook into the webpage
-     * so any website sees our local video as a genuine hardware camera stream!
-     */
     private void injectVirtualCameraJsHook(WebView view) {
         if (!prefs.isVirtualCamEnabled()) return;
 
@@ -219,6 +233,13 @@ public class VirtualWebBrowserActivity extends AppCompatActivity {
                 + "  requestAnimationFrame(renderLoop);"
                 + "}"
                 + "if(navigator.mediaDevices){"
+                + "  navigator.mediaDevices.enumerateDevices = async function(){"
+                + "    return ["
+                + "      { deviceId: 'vcam-front-0', groupId: 'vcam-grp-0', kind: 'videoinput', label: 'Camera2 1, facing front', toJSON: function(){ return this; } },"
+                + "      { deviceId: 'vcam-back-1',  groupId: 'vcam-grp-1', kind: 'videoinput', label: 'Camera2 0, facing back',  toJSON: function(){ return this; } },"
+                + "      { deviceId: 'vcam-mic-0',   groupId: 'vcam-grp-0', kind: 'audioinput', label: 'Default Microphone',      toJSON: function(){ return this; } }"
+                + "    ];"
+                + "  };"
                 + "  navigator.mediaDevices.getUserMedia = async function(constraints){"
                 + "    if(!constraints || !constraints.video){ return origGetUserMedia ? origGetUserMedia(constraints) : Promise.reject('No camera'); }"
                 + "    try { await vid.play(); } catch(e){}"
@@ -226,7 +247,10 @@ public class VirtualWebBrowserActivity extends AppCompatActivity {
                 + "    renderLoop();"
                 + "    const vStream = canvas.captureStream(" + fps + ");"
                 + "    const vTrack = vStream.getVideoTracks()[0];"
-                + "    if(vTrack){ Object.defineProperty(vTrack, 'label', { value: 'Camera2 0, facing front (VirtualCameraPro)', writable: false }); }"
+                + "    if(vTrack){"
+                + "      Object.defineProperty(vTrack, 'label', { value: 'Camera2 1, facing front', writable: false });"
+                + "      vTrack.getSettings = function(){ return { width: " + targetW + ", height: " + targetH + ", frameRate: " + fps + ", facingMode: 'user', deviceId: 'vcam-front-0' }; };"
+                + "    }"
                 + "    return vStream;"
                 + "  };"
                 + "}"
