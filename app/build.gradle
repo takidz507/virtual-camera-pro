@@ -10,8 +10,8 @@ android {
         applicationId "com.takidz.vcam"
         minSdk 24
         targetSdk 34
-        versionCode 1
-        versionName "1.0.0-pro"
+        versionCode 3
+        versionName "3.0.0-zero-xposed"
     }
 
     buildTypes {
@@ -25,6 +25,12 @@ android {
         sourceCompatibility JavaVersion.VERSION_17
         targetCompatibility JavaVersion.VERSION_17
     }
+
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
 }
 
 dependencies {
@@ -33,7 +39,12 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.webkit:webkit:1.10.0'
 
-    // Xposed API (compileOnly so the APK installs and runs normally on ANY non-root phone,
-    // while also working as an LSPatch module for patching third-party apps without root!)
+    // 1. Pure Java Hidden-API Unlocker (Android 9 - 16) for Binder ICameraService & ICameraDeviceUser Proxy (Zero Root, Zero Xposed!)
+    implementation 'org.lsposed.hiddenapibypass:hiddenapibypass:4.3'
+
+    // 2. Standalone In-Process ART Method Hook Engine (Pine) — Works WITHOUT Xposed and WITHOUT Root!
+    implementation 'top.canyie.pine:core:0.3.0'
+
+    // 3. Optional Xposed API (compileOnly) for backward compatibility with LSPatch if desired
     compileOnly 'de.robv.android.xposed:api:82'
 }
