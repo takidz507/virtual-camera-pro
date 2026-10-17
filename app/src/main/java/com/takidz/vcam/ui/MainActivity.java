@@ -371,8 +371,7 @@ public class MainActivity extends AppCompatActivity {
                 videoPlayer.startPlayback(this, activePreviewSurface, prefs);
             } else {
                 tvPreviewPlaceholder.setVisibility(View.VISIBLE);
-                tvPreviewPlaceholder.setText("لم يتم اختيار فيديو بعد
-اضغط على (اختيار فيديو) بالأسفل");
+                tvPreviewPlaceholder.setText("\u0644\u0645 \u064A\u062A\u0645 \u0627\u062E\u062A\u064A\u0627\u0631 \u0641\u064A\u062F\u064A\u0648 \u0628\u0639\u062F\n\u0627\u0636\u063A\u0637 \u0639\u0644\u0649 (\u0627\u062E\u062A\u064A\u0627\u0631 \u0641\u064A\u062F\u064A\u0648) \u0628\u0627\u0644\u0623\u0633\u0641\u0644");
             }
         }
     }
