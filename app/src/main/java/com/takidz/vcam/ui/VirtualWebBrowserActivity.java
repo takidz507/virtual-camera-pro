@@ -87,4 +87,175 @@ public class VirtualWebBrowserActivity extends AppCompatActivity {
 
         String initialUrl = getIntent() != null && getIntent().getDataString() != null
                 ? getIntent().getDataString()
-                : "https://webcamtests.com/";\netBrowserUrl.setText(initialUrl);\nwebView.loadUrl(initialUrl);\n}\n\nprivate void loadEnteredUrl() {\nString raw = etBrowserUrl.getText().toString().trim();\nif (raw.isEmpty()) return;\nif (!raw.startsWith("http://") && !raw.startsWith("https://")) {\nraw = "https://" + raw;\n}\netBrowserUrl.setText(raw);\nwebView.loadUrl(raw);\n}\n\nprivate void updateBannerUI() {\nif (prefs.isShowingRealCamera()) {\ntvWebRtcStatus.setText("📷 WebRTC: يبث الكاميرا الحقيقية حالياً");\nbtnWebRtcSwitchSource.setText("🔄 التبديل للفيديو الوهمي");\n} else {\ntvWebRtcStatus.setText("🟢 WebRTC Hook: يبث الفيديو المختار (" + prefs.getStreamQuality() + ")");\nbtnWebRtcSwitchSource.setText("🔄 التبديل للكاميرا الحقيقية");\n}\n}\n\n@SuppressLint("SetJavaScriptEnabled")\nprivate void configureWebView() {\nWebSettings settings = webView.getSettings();\nsettings.setJavaScriptEnabled(true);\nsettings.setDomStorageEnabled(true);\nsettings.setDatabaseEnabled(true);\nsettings.setMediaPlaybackRequiresUserGesture(false);\nsettings.setAllowFileAccess(true);\nsettings.setAllowContentAccess(true);\n// Desktop-class User-Agent support for WhatsApp Web / Telegram Web / Zoom\nsettings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36");\n\nwebView.setWebChromeClient(new WebChromeClient() {\n@Override\npublic void onPermissionRequest(final PermissionRequest request) {\nrunOnUiThread(() -> request.grant(request.getResources()));\n}\n\n@Override\npublic boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {\nif (prefs.isVirtualCamEnabled() && prefs.hasSelectedVideo() && !prefs.isShowingRealCamera()) {\nFile videoFile = prefs.getInternalVideoFile();\nif (videoFile.exists()) {\nfilePathCallback.onReceiveValue(new Uri[]{Uri.fromFile(videoFile)});\nToast.makeText(VirtualWebBrowserActivity.this, "🎬 تم تزويد الموقع بالفيديو الوهمي تلقائياً!", Toast.LENGTH_SHORT).show();\nreturn true;\n}\n}\nreturn super.onShowFileChooser(webView, filePathCallback, fileChooserParams);\n}\n});\n\nwebView.setWebViewClient(new WebViewClient() {\n@Override\npublic void onPageStarted(WebView view, String url, Bitmap favicon) {\nsuper.onPageStarted(view, url, favicon);\netBrowserUrl.setText(url);\ninjectVirtualCameraJsHook(view);\n}\n\n@Override\npublic void onPageFinished(WebView view, String url) {\nsuper.onPageFinished(view, url);\ninjectVirtualCameraJsHook(view);\n}\n\n@Nullable\n@Override\npublic WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {\nString url = request.getUrl().toString();\nif (url.startsWith("https://vcam.local/active_video.mp4")) {\ntry {\nFile videoFile = prefs.getInternalVideoFile();\nif (videoFile.exists()) {\nMap<String, String> headers = new HashMap<>();\nheaders.put("Access-Control-Allow-Origin", "*");\nheaders.put("Cache-Control", "no-store");\nreturn new WebResourceResponse(\n"video/mp4",\n"UTF-8",\n200,\n"OK",\nheaders,\nnew FileInputStream(videoFile)\n);\n}\n} catch (Exception ignored) {}\n}\nreturn super.shouldInterceptRequest(view, request);\n}\n});\n}\n\nprivate void injectVirtualCameraJsHook(WebView view) {\nif (!prefs.isVirtualCamEnabled()) return;\n\nint targetW = prefs.getTargetWidth();\nint targetH = prefs.getTargetHeight();\nint fps = prefs.getTargetFps();\nboolean loop = prefs.isLoopEnabled();\nboolean mirror = prefs.isMirrorEnabled();\nString initialMode = prefs.getSourceMode();\n\nString js = "(function(){"\n+ "if(window.__vcamHookInstalled) return;"\n+ "window.__vcamHookInstalled = true;"\n+ "window.__vcamMode = '" + initialMode + "';"\n+ "const origGetUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices) : null;"\n+ "const canvas = document.createElement('canvas');"\n+ "canvas.width = " + targetW + "; canvas.height = " + targetH + ";"\n+ "const ctx = canvas.getContext('2d');"\n+ "const vid = document.createElement('video');"\n+ "vid.src = 'https://vcam.local/active_video.mp4';"\n+ "vid.crossOrigin = 'anonymous';"\n+ "vid.loop = " + (loop ? "true" : "false") + ";"\n+ "vid.muted = true; vid.playsInline = true; vid.autoplay = true;"\n+ "let realVideoEl = null;"\n+ "window.__vcamSetMode = async function(newMode){"\n+ "  window.__vcamMode = newMode;"\n+ "  if(newMode === 'REAL_CAMERA' && !realVideoEl && origGetUserMedia){"\n+ "    try {"\n+ "      const realStream = await origGetUserMedia({video: true, audio: false});"\n+ "      realVideoEl = document.createElement('video');"\n+ "      realVideoEl.srcObject = realStream; realVideoEl.muted = true; realVideoEl.playsInline = true;"\n+ "      await realVideoEl.play();"\n+ "    } catch(e){}"\n+ "  }"\n+ "};"\n+ "function renderLoop(){"\n+ "  ctx.save();"\n+ "  if(" + (mirror ? "true" : "false") + " && window.__vcamMode !== 'REAL_CAMERA'){"\n+ "    ctx.translate(canvas.width, 0); ctx.scale(-1, 1);"\n+ "  }"\n+ "  const srcEl = (window.__vcamMode === 'REAL_CAMERA' && realVideoEl) ? realVideoEl : vid;"\n+ "  if(srcEl && srcEl.readyState >= 2){"\n+ "    ctx.drawImage(srcEl, 0, 0, canvas.width, canvas.height);"\n+ "  }"\n+ "  ctx.restore();"\n+ "  requestAnimationFrame(renderLoop);"\n+ "}"\n+ "if(navigator.mediaDevices){"\n+ "  navigator.mediaDevices.enumerateDevices = async function(){"\n+ "    return ["\n+ "      { deviceId: 'vcam-front-0', groupId: 'vcam-grp-0', kind: 'videoinput', label: 'Camera2 1, facing front', toJSON: function(){ return this; } },"\n+ "      { deviceId: 'vcam-back-1',  groupId: 'vcam-grp-1', kind: 'videoinput', label: 'Camera2 0, facing back',  toJSON: function(){ return this; } },"\n+ "      { deviceId: 'vcam-mic-0',   groupId: 'vcam-grp-0', kind: 'audioinput', label: 'Default Microphone',      toJSON: function(){ return this; } }"\n+ "    ];"\n+ "  };"\n+ "  navigator.mediaDevices.getUserMedia = async function(constraints){"\n+ "    if(!constraints || !constraints.video){ return origGetUserMedia ? origGetUserMedia(constraints) : Promise.reject('No camera'); }"\n+ "    try { await vid.play(); } catch(e){}"\n+ "    if(window.__vcamMode === 'REAL_CAMERA'){ await window.__vcamSetMode('REAL_CAMERA'); }"\n+ "    renderLoop();"\n+ "    const vStream = canvas.captureStream(" + fps + ");"\n+ "    const vTrack = vStream.getVideoTracks()[0];"\n+ "    if(vTrack){"\n+ "      Object.defineProperty(vTrack, 'label', { value: 'Camera2 1, facing front', writable: false });"\n+ "      vTrack.getSettings = function(){ return { width: " + targetW + ", height: " + targetH + ", frameRate: " + fps + ", facingMode: 'user', deviceId: 'vcam-front-0' }; };"\n+ "    }"\n+ "    return vStream;"\n+ "  };"\n+ "}"\n+ "})();";\n\nview.evaluateJavascript(js, null);\n}\n}\n
+                : "https://webcamtests.com/";
+        etBrowserUrl.setText(initialUrl);
+        webView.loadUrl(initialUrl);
+    }
+
+    private void loadEnteredUrl() {
+        String raw = etBrowserUrl.getText().toString().trim();
+        if (raw.isEmpty()) return;
+        if (!raw.startsWith("http://") && !raw.startsWith("https://")) {
+            raw = "https://" + raw;
+        }
+        etBrowserUrl.setText(raw);
+        webView.loadUrl(raw);
+    }
+
+    private void updateBannerUI() {
+        if (prefs.isShowingRealCamera()) {
+            tvWebRtcStatus.setText("📷 WebRTC: يبث الكاميرا الحقيقية حالياً");
+            btnWebRtcSwitchSource.setText("🔄 التبديل للفيديو الوهمي");
+        } else {
+            tvWebRtcStatus.setText("🟢 WebRTC Hook: يبث الفيديو المختار (" + prefs.getStreamQuality() + ")");
+            btnWebRtcSwitchSource.setText("🔄 التبديل للكاميرا الحقيقية");
+        }
+    }
+
+    @SuppressLint("SetJavaScriptEnabled")
+    private void configureWebView() {
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setDatabaseEnabled(true);
+        settings.setMediaPlaybackRequiresUserGesture(false);
+        settings.setAllowFileAccess(true);
+        settings.setAllowContentAccess(true);
+        // Desktop-class User-Agent support for WhatsApp Web / Telegram Web / Zoom
+        settings.setUserAgentString("Mozilla/5.0 (Linux; Android 14; Pixel 8 Pro) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Mobile Safari/537.36");
+
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public void onPermissionRequest(final PermissionRequest request) {
+                runOnUiThread(() -> request.grant(request.getResources()));
+            }
+
+            @Override
+            public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+                if (prefs.isVirtualCamEnabled() && prefs.hasSelectedVideo() && !prefs.isShowingRealCamera()) {
+                    File videoFile = prefs.getInternalVideoFile();
+                    if (videoFile.exists()) {
+                        filePathCallback.onReceiveValue(new Uri[]{Uri.fromFile(videoFile)});
+                        Toast.makeText(VirtualWebBrowserActivity.this, "🎬 تم تزويد الموقع بالفيديو الوهمي تلقائياً!", Toast.LENGTH_SHORT).show();
+                        return true;
+                    }
+                }
+                return super.onShowFileChooser(webView, filePathCallback, fileChooserParams);
+            }
+        });
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageStarted(WebView view, String url, Bitmap favicon) {
+                super.onPageStarted(view, url, favicon);
+                etBrowserUrl.setText(url);
+                injectVirtualCameraJsHook(view);
+            }
+
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                super.onPageFinished(view, url);
+                injectVirtualCameraJsHook(view);
+            }
+
+            @Nullable
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
+                String url = request.getUrl().toString();
+                if (url.startsWith("https://vcam.local/active_video.mp4")) {
+                    try {
+                        File videoFile = prefs.getInternalVideoFile();
+                        if (videoFile.exists()) {
+                            Map<String, String> headers = new HashMap<>();
+                            headers.put("Access-Control-Allow-Origin", "*");
+                            headers.put("Cache-Control", "no-store");
+                            return new WebResourceResponse(
+                                    "video/mp4",
+                                    "UTF-8",
+                                    200,
+                                    "OK",
+                                    headers,
+                                    new FileInputStream(videoFile)
+                            );
+                        }
+                    } catch (Exception ignored) {}
+                }
+                return super.shouldInterceptRequest(view, request);
+            }
+        });
+    }
+
+    private void injectVirtualCameraJsHook(WebView view) {
+        if (!prefs.isVirtualCamEnabled()) return;
+
+        int targetW = prefs.getTargetWidth();
+        int targetH = prefs.getTargetHeight();
+        int fps = prefs.getTargetFps();
+        boolean loop = prefs.isLoopEnabled();
+        boolean mirror = prefs.isMirrorEnabled();
+        String initialMode = prefs.getSourceMode();
+
+        String js = "(function(){"
+                + "if(window.__vcamHookInstalled) return;"
+                + "window.__vcamHookInstalled = true;"
+                + "window.__vcamMode = '" + initialMode + "';"
+                + "const origGetUserMedia = navigator.mediaDevices && navigator.mediaDevices.getUserMedia ? navigator.mediaDevices.getUserMedia.bind(navigator.mediaDevices) : null;"
+                + "const canvas = document.createElement('canvas');"
+                + "canvas.width = " + targetW + "; canvas.height = " + targetH + ";"
+                + "const ctx = canvas.getContext('2d');"
+                + "const vid = document.createElement('video');"
+                + "vid.src = 'https://vcam.local/active_video.mp4';"
+                + "vid.crossOrigin = 'anonymous';"
+                + "vid.loop = " + (loop ? "true" : "false") + ";"
+                + "vid.muted = true; vid.playsInline = true; vid.autoplay = true;"
+                + "let realVideoEl = null;"
+                + "window.__vcamSetMode = async function(newMode){"
+                + "  window.__vcamMode = newMode;"
+                + "  if(newMode === 'REAL_CAMERA' && !realVideoEl && origGetUserMedia){"
+                + "    try {"
+                + "      const realStream = await origGetUserMedia({video: true, audio: false});"
+                + "      realVideoEl = document.createElement('video');"
+                + "      realVideoEl.srcObject = realStream; realVideoEl.muted = true; realVideoEl.playsInline = true;"
+                + "      await realVideoEl.play();"
+                + "    } catch(e){}"
+                + "  }"
+                + "};"
+                + "function renderLoop(){"
+                + "  ctx.save();"
+                + "  if(" + (mirror ? "true" : "false") + " && window.__vcamMode !== 'REAL_CAMERA'){"
+                + "    ctx.translate(canvas.width, 0); ctx.scale(-1, 1);"
+                + "  }"
+                + "  const srcEl = (window.__vcamMode === 'REAL_CAMERA' && realVideoEl) ? realVideoEl : vid;"
+                + "  if(srcEl && srcEl.readyState >= 2){"
+                + "    ctx.drawImage(srcEl, 0, 0, canvas.width, canvas.height);"
+                + "  }"
+                + "  ctx.restore();"
+                + "  requestAnimationFrame(renderLoop);"
+                + "}"
+                + "if(navigator.mediaDevices){"
+                + "  navigator.mediaDevices.enumerateDevices = async function(){"
+                + "    return ["
+                + "      { deviceId: 'vcam-front-0', groupId: 'vcam-grp-0', kind: 'videoinput', label: 'Camera2 1, facing front', toJSON: function(){ return this; } },"
+                + "      { deviceId: 'vcam-back-1',  groupId: 'vcam-grp-1', kind: 'videoinput', label: 'Camera2 0, facing back',  toJSON: function(){ return this; } },"
+                + "      { deviceId: 'vcam-mic-0',   groupId: 'vcam-grp-0', kind: 'audioinput', label: 'Default Microphone',      toJSON: function(){ return this; } }"
+                + "    ];"
+                + "  };"
+                + "  navigator.mediaDevices.getUserMedia = async function(constraints){"
+                + "    if(!constraints || !constraints.video){ return origGetUserMedia ? origGetUserMedia(constraints) : Promise.reject('No camera'); }"
+                + "    try { await vid.play(); } catch(e){}"
+                + "    if(window.__vcamMode === 'REAL_CAMERA'){ await window.__vcamSetMode('REAL_CAMERA'); }"
+                + "    renderLoop();"
+                + "    const vStream = canvas.captureStream(" + fps + ");"
+                + "    const vTrack = vStream.getVideoTracks()[0];"
+                + "    if(vTrack){"
+                + "      Object.defineProperty(vTrack, 'label', { value: 'Camera2 1, facing front', writable: false });"
+                + "      vTrack.getSettings = function(){ return { width: " + targetW + ", height: " + targetH + ", frameRate: " + fps + ", facingMode: 'user', deviceId: 'vcam-front-0' }; };"
+                + "    }"
+                + "    return vStream;"
+                + "  };"
+                + "}"
+                + "})();";
+
+        view.evaluateJavascript(js, null);
+    }
+}
